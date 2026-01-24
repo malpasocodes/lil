@@ -26,13 +26,21 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
   try {
     // Find app (can look up by ID or name)
-    let app = await db
-      .select()
-      .from(apps)
-      .where(eq(apps.id, appId))
-      .then((rows) => rows[0]);
+    // Check if appId is a valid UUID format first
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUuid = uuidRegex.test(appId);
 
-    // If not found by ID, try by name
+    let app;
+    if (isUuid) {
+      app = await db
+        .select()
+        .from(apps)
+        .where(eq(apps.id, appId))
+        .then((rows) => rows[0]);
+    }
+
+    // If not found by ID (or wasn't a UUID), try by name
     if (!app) {
       app = await db
         .select()
@@ -70,7 +78,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(loginEvents)
       .where(
-        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${todayStart}`
+        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${todayStart.toISOString()}`
       );
 
     // Get logins this week
@@ -78,7 +86,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(loginEvents)
       .where(
-        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${weekAgo}`
+        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${weekAgo.toISOString()}`
       );
 
     // Get total learning events for this app
@@ -92,7 +100,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(learningEvents)
       .where(
-        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${weekAgo}`
+        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${weekAgo.toISOString()}`
       );
 
     // Get events this month
@@ -100,7 +108,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(learningEvents)
       .where(
-        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${monthAgo}`
+        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${monthAgo.toISOString()}`
       );
 
     // Get event type breakdown

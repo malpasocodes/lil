@@ -1,6 +1,10 @@
 import type { APIRoute } from "astro";
 import { db } from "../../../../lib/db/client";
-import { learners, loginEvents, learningEvents } from "../../../../lib/db/schema";
+import {
+  learners,
+  loginEvents,
+  learningEvents,
+} from "../../../../lib/db/schema";
 import { eq, count } from "drizzle-orm";
 
 export const GET: APIRoute = async ({ params, locals }) => {
@@ -20,7 +24,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 
@@ -33,13 +37,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .then((rows) => rows[0]);
 
     if (!learner) {
-      return new Response(
-        JSON.stringify({ error: "Learner not found" }),
-        {
-          status: 404,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Learner not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Get login count
@@ -73,7 +74,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error fetching learner:", error);
@@ -85,7 +86,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 };

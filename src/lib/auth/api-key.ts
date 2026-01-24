@@ -13,7 +13,7 @@ export interface AuthenticatedApp {
  * Returns null if the key is invalid or the app is inactive.
  */
 export async function validateApiKey(
-  apiKey: string
+  apiKey: string,
 ): Promise<AuthenticatedApp | null> {
   if (!apiKey) {
     return null;

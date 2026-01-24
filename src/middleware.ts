@@ -22,7 +22,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         {
           status: 401,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 

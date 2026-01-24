@@ -16,20 +16,21 @@ export const GET: APIRoute = async () => {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     return new Response(
       JSON.stringify({
         status: "unhealthy",
         service: "lil",
-        error: error instanceof Error ? error.message : "Database connection failed",
+        error:
+          error instanceof Error ? error.message : "Database connection failed",
         timestamp: new Date().toISOString(),
       }),
       {
         status: 503,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 };

@@ -25,7 +25,9 @@ const apps = pgTable("apps", {
   apiKeyHash: text("api_key_hash").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 async function main() {
@@ -69,9 +71,13 @@ async function main() {
 
     console.log("\n✅ API key rotated successfully!\n");
     console.log(`App: ${appName}`);
-    console.log("\n🔑 New API Key (store this securely - it cannot be retrieved later):");
+    console.log(
+      "\n🔑 New API Key (store this securely - it cannot be retrieved later):",
+    );
     console.log(`\n  ${newApiKey}\n`);
-    console.log("Update your app's LIL_API_KEY environment variable with this new key.");
+    console.log(
+      "Update your app's LIL_API_KEY environment variable with this new key.",
+    );
     console.log("The old API key is now invalid.\n");
   } catch (error) {
     console.error("Error rotating API key:", error.message);

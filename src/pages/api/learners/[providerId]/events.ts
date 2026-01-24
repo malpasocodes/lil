@@ -25,7 +25,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
       {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 
@@ -61,7 +61,9 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     }
 
     if (fromDate) {
-      learningConditions.push(gte(learningEvents.occurredAt, new Date(fromDate)));
+      learningConditions.push(
+        gte(learningEvents.occurredAt, new Date(fromDate)),
+      );
     }
 
     if (toDate) {
@@ -157,7 +159,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
     // Combine and sort all events
     const allEvents = [...formattedEvents, ...formattedLogins].sort(
       (a, b) =>
-        new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime()
+        new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime(),
     );
 
     return new Response(
@@ -174,7 +176,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error fetching learner events:", error);
@@ -186,7 +188,7 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 };

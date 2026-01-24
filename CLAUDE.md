@@ -30,11 +30,13 @@ node scripts/rotate-api-key.mjs <name>              # Rotate an app's API key
 ## Architecture
 
 ### Tech Stack
+
 - **Runtime**: Astro 5 SSR with Netlify adapter
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
 - **Auth**: API key authentication (X-API-Key header)
 
 ### Key Directories
+
 - `src/pages/api/` - REST API endpoints
   - `events/` - Write endpoints (login, activity, assessment)
   - `learners/` - Read endpoints for learner data
@@ -57,17 +59,20 @@ node scripts/rotate-api-key.mjs <name>              # Rotate an app's API key
 ### API Endpoints
 
 **Write (POST)**
+
 - `/api/events/login` - Record login event (upserts learner)
 - `/api/events/activity` - Record activity completion
 - `/api/events/assessment` - Record assessment result
 
 **Read (GET)**
+
 - `/api/learners/:providerId` - Get learner profile + stats
 - `/api/learners/:providerId/events` - Get learner's events (filterable)
 - `/api/apps/:appId/stats` - Get app aggregate statistics
 - `/api/health` - Health check (no auth required)
 
 ### Authentication
+
 All endpoints (except health) require `X-API-Key` header with a valid app API key.
 
 ## Environment Variables
@@ -79,6 +84,7 @@ DATABASE_URL=postgresql://user:password@host.neon.tech/lil
 ## Client Integration
 
 Apps integrate with LIL by:
+
 1. Registering via `scripts/register-app.mjs` to get an API key
 2. Setting `LIL_API_URL` and `LIL_API_KEY` env vars
 3. POSTing events on login and activity completion (fire-and-forget)

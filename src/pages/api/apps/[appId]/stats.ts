@@ -15,13 +15,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
   const { appId } = params;
 
   if (!appId) {
-    return new Response(
-      JSON.stringify({ error: "Missing appId parameter" }),
-      {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    return new Response(JSON.stringify({ error: "Missing appId parameter" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -78,7 +75,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(loginEvents)
       .where(
-        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${todayStart.toISOString()}`
+        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${todayStart.toISOString()}`,
       );
 
     // Get logins this week
@@ -86,7 +83,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(loginEvents)
       .where(
-        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${weekAgo.toISOString()}`
+        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${weekAgo.toISOString()}`,
       );
 
     // Get total learning events for this app
@@ -100,7 +97,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(learningEvents)
       .where(
-        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${weekAgo.toISOString()}`
+        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${weekAgo.toISOString()}`,
       );
 
     // Get events this month
@@ -108,7 +105,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .select({ count: count() })
       .from(learningEvents)
       .where(
-        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${monthAgo.toISOString()}`
+        sql`${learningEvents.appId} = ${app.id} AND ${learningEvents.occurredAt} >= ${monthAgo.toISOString()}`,
       );
 
     // Get event type breakdown
@@ -142,14 +139,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
               acc[event_type] = count;
               return acc;
             },
-            {} as Record<string, number>
+            {} as Record<string, number>,
           ),
         },
       }),
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error fetching app stats:", error);
@@ -161,7 +158,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 };

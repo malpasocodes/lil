@@ -54,7 +54,7 @@ export const loginEvents = pgTable(
     index("login_events_learner_idx").on(table.learnerId),
     index("login_events_app_idx").on(table.appId),
     index("login_events_time_idx").on(table.loggedInAt),
-  ]
+  ],
 );
 
 // Activity/assessment events from all apps
@@ -82,7 +82,7 @@ export const learningEvents = pgTable(
     index("learning_events_type_idx").on(table.eventType),
     index("learning_events_time_idx").on(table.occurredAt),
     index("learning_events_app_idx").on(table.appId),
-  ]
+  ],
 );
 
 // Type exports for use in application code

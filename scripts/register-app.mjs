@@ -18,13 +18,7 @@ import bcrypt from "bcrypt";
 import { randomBytes } from "crypto";
 
 // Schema definition (duplicated here to avoid import issues with .ts files)
-import {
-  pgTable,
-  uuid,
-  text,
-  boolean,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, boolean, timestamp } from "drizzle-orm/pg-core";
 
 const apps = pgTable("apps", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -32,15 +26,21 @@ const apps = pgTable("apps", {
   apiKeyHash: text("api_key_hash").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 1) {
-    console.error("Usage: node scripts/register-app.mjs <app-name> [description]");
-    console.error("Example: node scripts/register-app.mjs ai-atelier-pro 'AI PM certification portal'");
+    console.error(
+      "Usage: node scripts/register-app.mjs <app-name> [description]",
+    );
+    console.error(
+      "Example: node scripts/register-app.mjs ai-atelier-pro 'AI PM certification portal'",
+    );
     process.exit(1);
   }
 
@@ -78,7 +78,9 @@ async function main() {
     console.log(`  Name: ${newApp.name}`);
     console.log(`  Description: ${newApp.description || "(none)"}`);
     console.log(`  Created: ${newApp.createdAt.toISOString()}`);
-    console.log("\n🔑 API Key (store this securely - it cannot be retrieved later):");
+    console.log(
+      "\n🔑 API Key (store this securely - it cannot be retrieved later):",
+    );
     console.log(`\n  ${apiKey}\n`);
     console.log("Add this to your app's environment variables as LIL_API_KEY");
   } catch (error) {

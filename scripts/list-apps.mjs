@@ -17,7 +17,9 @@ const apps = pgTable("apps", {
   apiKeyHash: text("api_key_hash").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 async function main() {
@@ -35,7 +37,9 @@ async function main() {
 
     if (allApps.length === 0) {
       console.log("\nNo apps registered yet.");
-      console.log("Use 'node scripts/register-app.mjs <name>' to register an app.\n");
+      console.log(
+        "Use 'node scripts/register-app.mjs <name>' to register an app.\n",
+      );
     } else {
       console.log("\nRegistered Apps:\n");
       console.log("─".repeat(80));

@@ -1,8 +1,8 @@
 ---
 // Dashboard - Stats overview for all registered apps
 import { db } from "../lib/db/client";
-import { apps, loginEvents, learningEvents } from "../lib/db/schema";
-import { eq, count, countDistinct, sql } from "drizzle-orm";
+import { apps, loginEvents, learningEvents, learners } from "../lib/db/schema";
+import { eq, count, countDistinct, sql, desc } from "drizzle-orm";
 
 // Calculate time boundaries
 const now = new Date();
@@ -59,6 +59,22 @@ const appStats = await Promise.all(
       .where(eq(learningEvents.appId, app.id))
       .groupBy(learningEvents.eventType);
 
+    // Learners who logged in today (with details)
+    const todaysLearners = await db
+      .selectDistinctOn([loginEvents.learnerId], {
+        id: learners.id,
+        name: learners.name,
+        email: learners.email,
+        providerId: learners.providerId,
+        lastLogin: loginEvents.loggedInAt,
+      })
+      .from(loginEvents)
+      .innerJoin(learners, eq(loginEvents.learnerId, learners.id))
+      .where(
+        sql`${loginEvents.appId} = ${app.id} AND ${loginEvents.loggedInAt} >= ${todayStart.toISOString()}`
+      )
+      .orderBy(loginEvents.learnerId, desc(loginEvents.loggedInAt));
+
     return {
       app,
       stats: {
@@ -74,6 +90,7 @@ const appStats = await Promise.all(
           {} as Record<string, number>
         ),
       },
+      todaysLearners,
     };
   })
 );
@@ -196,6 +213,49 @@ const appStats = await Promise.all(
         padding: 3rem;
         color: #666;
       }
+      .todays-learners {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1rem;
+        margin-top: 0.5rem;
+      }
+      .todays-learners h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.85em;
+        color: #666;
+      }
+      .learner-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .learner-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f0fdf4;
+        padding: 0.5rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.85em;
+      }
+      .learner-name {
+        color: #166534;
+        font-weight: 500;
+      }
+      .learner-email {
+        color: #666;
+        font-size: 0.9em;
+      }
+      .learner-time {
+        color: #888;
+        font-size: 0.8em;
+      }
+      .no-learners {
+        color: #999;
+        font-size: 0.85em;
+        font-style: italic;
+      }
       @media (max-width: 600px) {
         body {
           padding: 1rem;
@@ -225,7 +285,7 @@ const appStats = await Promise.all(
       </div>
     ) : (
       <div class="apps-grid">
-        {appStats.map(({ app, stats }) => (
+        {appStats.map(({ app, stats, todaysLearners }) => (
           <div class="app-card">
             <h2 class="app-name">{app.name}</h2>
             {app.description && <p class="app-description">{app.description}</p>}
@@ -262,6 +322,25 @@ const appStats = await Promise.all(
                 </div>
               </div>
             )}
+
+            <div class="todays-learners">
+              <h4>Learners Active Today</h4>
+              {todaysLearners.length === 0 ? (
+                <p class="no-learners">No logins today</p>
+              ) : (
+                <div class="learner-list">
+                  {todaysLearners.map((learner) => (
+                    <div class="learner-item">
+                      <div>
+                        <span class="learner-name">{learner.name || learner.email || learner.providerId}</span>
+                        {learner.name && learner.email && <span class="learner-email"> ({learner.email})</span>}
+                      </div>
+                      <span class="learner-time">{learner.lastLogin.toLocaleTimeString()}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>

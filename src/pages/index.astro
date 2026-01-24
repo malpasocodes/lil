@@ -1,0 +1,100 @@
+---
+// LIL - Learning Intelligence Layer
+// This is a simple landing page for the API service
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LIL - Learning Intelligence Layer</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: #f5f5f5;
+      }
+      h1 {
+        color: #333;
+      }
+      code {
+        background: #e0e0e0;
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+      .endpoint {
+        background: white;
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+      }
+      .method {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.8em;
+        margin-right: 0.5rem;
+      }
+      .post {
+        background: #22c55e;
+        color: white;
+      }
+      .get {
+        background: #3b82f6;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>LIL - Learning Intelligence Layer</h1>
+    <p>
+      A centralized learning data warehouse for aggregating learner activity
+      across multiple applications.
+    </p>
+
+    <h2>API Endpoints</h2>
+    <p>All endpoints (except health check) require an <code>X-API-Key</code> header.</p>
+
+    <h3>Write Events</h3>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <code>/api/events/login</code>
+      <p>Record a login event</p>
+    </div>
+    <div class="endpoint">
+      <span class="method post">POST</span>
+      <code>/api/events/activity</code>
+      <p>Record an activity or assessment event</p>
+    </div>
+
+    <h3>Read Events</h3>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <code>/api/learners/:providerId</code>
+      <p>Get learner profile and summary stats</p>
+    </div>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <code>/api/learners/:providerId/events</code>
+      <p>Get events for a learner (supports filtering)</p>
+    </div>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <code>/api/apps/:appId/stats</code>
+      <p>Get aggregate stats for an app</p>
+    </div>
+
+    <h3>Health</h3>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <code>/api/health</code>
+      <p>Health check (no auth required)</p>
+    </div>
+  </body>
+</html>

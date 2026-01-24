@@ -1,12 +1,7 @@
 import type { APIRoute } from "astro";
 import { db } from "../../../../lib/db/client";
-import {
-  apps,
-  learners,
-  loginEvents,
-  learningEvents,
-} from "../../../../lib/db/schema";
-import { eq, count, countDistinct, gte, sql } from "drizzle-orm";
+import { apps, loginEvents, learningEvents } from "../../../../lib/db/schema";
+import { eq, count, countDistinct, sql } from "drizzle-orm";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   const authenticatedApp = locals.app;

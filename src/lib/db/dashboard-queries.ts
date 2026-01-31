@@ -149,13 +149,14 @@ export async function getKpiMetrics(): Promise<KpiMetrics> {
 export async function getTimeSeries(days: number): Promise<TimeSeriesPoint[]> {
   const since = daysAgo(days);
 
-  const loginDateExpr = sql`date(${loginEvents.loggedInAt} AT TIME ZONE ${TZ})`;
-  const eventDateExpr = sql`date(${learningEvents.occurredAt} AT TIME ZONE ${TZ})`;
+  const tzLiteral = sql.raw(`'${TZ}'`);
+  const loginDateExpr = sql<string>`date(${loginEvents.loggedInAt} AT TIME ZONE ${tzLiteral})`;
+  const eventDateExpr = sql<string>`date(${learningEvents.occurredAt} AT TIME ZONE ${tzLiteral})`;
 
   const [loginRows, eventRows] = await Promise.all([
     db
       .select({
-        date: sql<string>`${loginDateExpr}`,
+        date: loginDateExpr,
         count: count(),
       })
       .from(loginEvents)
@@ -164,7 +165,7 @@ export async function getTimeSeries(days: number): Promise<TimeSeriesPoint[]> {
       .orderBy(loginDateExpr),
     db
       .select({
-        date: sql<string>`${eventDateExpr}`,
+        date: eventDateExpr,
         count: count(),
       })
       .from(learningEvents)

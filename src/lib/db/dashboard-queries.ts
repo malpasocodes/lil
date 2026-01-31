@@ -1,6 +1,6 @@
 import { db } from "./client";
 import { apps, loginEvents, learningEvents, learners } from "./schema";
-import { eq, count, countDistinct, sql, desc, and, gte, type AnyColumn } from "drizzle-orm";
+import { eq, count, countDistinct, sql, desc, and, gte } from "drizzle-orm";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -149,28 +149,28 @@ export async function getKpiMetrics(): Promise<KpiMetrics> {
 export async function getTimeSeries(days: number): Promise<TimeSeriesPoint[]> {
   const since = daysAgo(days);
 
-  const dateSql = (col: AnyColumn) =>
-    sql`date(${col} AT TIME ZONE ${TZ})`;
+  const loginDateExpr = sql`date(${loginEvents.loggedInAt} AT TIME ZONE ${TZ})`;
+  const eventDateExpr = sql`date(${learningEvents.occurredAt} AT TIME ZONE ${TZ})`;
 
   const [loginRows, eventRows] = await Promise.all([
     db
       .select({
-        date: sql<string>`${dateSql(loginEvents.loggedInAt)}`,
+        date: sql<string>`${loginDateExpr}`,
         count: count(),
       })
       .from(loginEvents)
       .where(gte(loginEvents.loggedInAt, since))
-      .groupBy(dateSql(loginEvents.loggedInAt))
-      .orderBy(dateSql(loginEvents.loggedInAt)),
+      .groupBy(loginDateExpr)
+      .orderBy(loginDateExpr),
     db
       .select({
-        date: sql<string>`${dateSql(learningEvents.occurredAt)}`,
+        date: sql<string>`${eventDateExpr}`,
         count: count(),
       })
       .from(learningEvents)
       .where(gte(learningEvents.occurredAt, since))
-      .groupBy(dateSql(learningEvents.occurredAt))
-      .orderBy(dateSql(learningEvents.occurredAt)),
+      .groupBy(eventDateExpr)
+      .orderBy(eventDateExpr),
   ]);
 
   const loginMap = new Map(loginRows.map((r) => [r.date, r.count]));

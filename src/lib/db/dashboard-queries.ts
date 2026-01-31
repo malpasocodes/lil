@@ -1,6 +1,6 @@
 import { db } from "./client";
 import { apps, loginEvents, learningEvents, learners } from "./schema";
-import { eq, count, countDistinct, sql, desc, and, gte } from "drizzle-orm";
+import { eq, count, countDistinct, sql, desc, and, gte, type AnyColumn } from "drizzle-orm";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -39,19 +39,42 @@ export type AppBreakdown = {
   eventTypes: Record<string, number>;
 };
 
-// ── Helpers ────────────────────────────────────────────────────────
+// ── Helpers (all day boundaries are US Eastern) ───────────────────
+
+const TZ = "America/New_York";
+
+/** YYYY-MM-DD for `d` in Eastern time */
+function easternDateStr(d: Date = new Date()): string {
+  return d.toLocaleDateString("en-CA", { timeZone: TZ });
+}
+
+/** UTC Date representing midnight Eastern on the given YYYY-MM-DD */
+function midnightEastern(yyyy_mm_dd: string): Date {
+  // Use noon UTC on that date to safely determine the Eastern UTC offset
+  const noonUtc = new Date(yyyy_mm_dd + "T12:00:00Z");
+  const easternHour = parseInt(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: TZ,
+      hour: "2-digit",
+      hour12: false,
+    }).format(noonUtc),
+  );
+  const offsetHours = easternHour - 12; // e.g. -5 for EST, -4 for EDT
+  return new Date(
+    new Date(yyyy_mm_dd + "T00:00:00Z").getTime() - offsetHours * 3_600_000,
+  );
+}
 
 function todayStart(): Date {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d;
+  return midnightEastern(easternDateStr());
 }
 
 function daysAgo(n: number): Date {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  d.setHours(0, 0, 0, 0);
-  return d;
+  // Subtract days from today's Eastern date (not from UTC)
+  const todayStr = easternDateStr();
+  const d = new Date(todayStr + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() - n);
+  return midnightEastern(d.toISOString().split("T")[0]);
 }
 
 // ── Queries ────────────────────────────────────────────────────────
@@ -126,44 +149,48 @@ export async function getKpiMetrics(): Promise<KpiMetrics> {
 export async function getTimeSeries(days: number): Promise<TimeSeriesPoint[]> {
   const since = daysAgo(days);
 
+  const dateSql = (col: AnyColumn) =>
+    sql`date(${col} AT TIME ZONE ${TZ})`;
+
   const [loginRows, eventRows] = await Promise.all([
     db
       .select({
-        date: sql<string>`date(${loginEvents.loggedInAt})`,
+        date: sql<string>`${dateSql(loginEvents.loggedInAt)}`,
         count: count(),
       })
       .from(loginEvents)
       .where(gte(loginEvents.loggedInAt, since))
-      .groupBy(sql`date(${loginEvents.loggedInAt})`)
-      .orderBy(sql`date(${loginEvents.loggedInAt})`),
+      .groupBy(dateSql(loginEvents.loggedInAt))
+      .orderBy(dateSql(loginEvents.loggedInAt)),
     db
       .select({
-        date: sql<string>`date(${learningEvents.occurredAt})`,
+        date: sql<string>`${dateSql(learningEvents.occurredAt)}`,
         count: count(),
       })
       .from(learningEvents)
       .where(gte(learningEvents.occurredAt, since))
-      .groupBy(sql`date(${learningEvents.occurredAt})`)
-      .orderBy(sql`date(${learningEvents.occurredAt})`),
+      .groupBy(dateSql(learningEvents.occurredAt))
+      .orderBy(dateSql(learningEvents.occurredAt)),
   ]);
 
   const loginMap = new Map(loginRows.map((r) => [r.date, r.count]));
   const eventMap = new Map(eventRows.map((r) => [r.date, r.count]));
 
-  // Fill every day in range
+  // Fill every day in range (Eastern dates)
   const result: TimeSeriesPoint[] = [];
-  const cursor = new Date(since);
-  const today = new Date();
-  today.setHours(23, 59, 59, 999);
+  const startStr = easternDateStr(since);
+  const endStr = easternDateStr();
+  const cursor = new Date(startStr + "T12:00:00Z");
+  const end = new Date(endStr + "T12:00:00Z");
 
-  while (cursor <= today) {
+  while (cursor <= end) {
     const dateStr = cursor.toISOString().split("T")[0];
     result.push({
       date: dateStr,
       logins: loginMap.get(dateStr) ?? 0,
       events: eventMap.get(dateStr) ?? 0,
     });
-    cursor.setDate(cursor.getDate() + 1);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
 
   return result;

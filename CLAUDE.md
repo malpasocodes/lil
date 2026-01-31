@@ -34,6 +34,7 @@ node scripts/rotate-api-key.mjs <name>              # Rotate an app's API key
 - **Runtime**: Astro 5 SSR with Netlify adapter
 - **Database**: PostgreSQL (Neon) with Drizzle ORM
 - **Auth**: API key authentication (X-API-Key header)
+- **Dashboard UI**: React 19, Tailwind CSS v4, shadcn/ui, Recharts, TanStack React Table
 
 ### Key Directories
 
@@ -42,9 +43,14 @@ node scripts/rotate-api-key.mjs <name>              # Rotate an app's API key
   - `learners/` - Read endpoints for learner data
   - `apps/` - Read endpoints for app statistics
   - `health.ts` - Health check endpoint
+- `src/pages/dashboard.astro` - Dashboard page (React island with server-side data fetching)
+- `src/components/ui/` - shadcn/ui primitives (card, chart, table, badge, button, etc.)
+- `src/components/dashboard/` - Dashboard-specific React components
+- `src/styles/globals.css` - Tailwind v4 + shadcn CSS variables (only imported by dashboard)
 - `src/lib/` - Shared code
-  - `db/` - Drizzle schema and client
+  - `db/` - Drizzle schema, client, and dashboard queries
   - `auth/` - API key validation
+  - `utils.ts` - cn() utility for Tailwind class merging
 - `src/middleware.ts` - API key authentication middleware
 - `scripts/` - Admin utilities for app management
 - `drizzle/` - Generated SQL migrations
@@ -70,6 +76,12 @@ node scripts/rotate-api-key.mjs <name>              # Rotate an app's API key
 - `/api/learners/:providerId/events` - Get learner's events (filterable)
 - `/api/apps/:appId/stats` - Get app aggregate statistics
 - `/api/health` - Health check (no auth required)
+
+### Dashboard
+
+The dashboard (`/dashboard`) is a single React island rendered via `client:load`. Astro frontmatter queries the DB server-side with Drizzle and passes serialized JSON props to the `DashboardShell` component. All day boundaries (today, this week, time-series buckets) are anchored to **US Eastern (America/New_York)**.
+
+When writing Drizzle `sql` template expressions used in both SELECT and GROUP BY, use `sql.raw()` for constant literals (e.g. timezone names) to avoid parameterization mismatches.
 
 ### Authentication
 
